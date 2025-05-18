@@ -83,3 +83,8 @@ the writes are much quicker compared to traditional BTree based implementations.
 
 ## LSM Read flow:
 ![read flow of LSM Tree](lsmRead.png)
+
+
+
+## Questions:
+- What is a red-black tree? How is it used?
