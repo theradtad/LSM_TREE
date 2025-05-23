@@ -1,12 +1,12 @@
 package com.lsm;
 
+import java.util.List;
 import java.util.TreeMap;
 
 public class LSMTree {
 
     private Memstore memstore;
-    private int MAX_MEMSTORE_SIZE = 30;
-    private static final String MEMSTORE_FILE_PATH = "./data/memstore.txt";
+    private int MAX_MEMSTORE_SIZE = 30;;
 
     public LSMTree() {
         this.memstore = new Memstore();
@@ -27,7 +27,15 @@ public class LSMTree {
         if(memstore.get(key) != null) {
             return memstore.get(key);
         }
-        return TreeMapWriter.loadFile(MEMSTORE_FILE_PATH).get(key);
+        List<String> fileList = FileManager.getSSTableFileList();
+        for (String filePath : fileList) {
+            TreeMap<String, String> data = TreeMapWriter.loadFile(filePath);
+            if (data != null && data.containsKey(key)) {
+                return data.get(key);
+            }
+        }
+
+        return null;
     }
     
     public int getMemstoreSize() {
@@ -43,7 +51,25 @@ public class LSMTree {
     }
 
     public void flushMemstore() {
-        TreeMapWriter.persist(MEMSTORE_FILE_PATH, getMemstoreTreeMap());
+        try {
+            String filePath = FileManager.getSSTableFilePath();
+            TreeMapWriter.persist(filePath, memstore.getTreeMap());
+            System.out.println("Memstore flushed to file: " + filePath);
+        } catch (LimitExceeded e) {
+            System.out.println("Error while flushing memstore: " + e.getMessage());
+            try {
+                compact();
+                String filePath = FileManager.getSSTableFilePath();
+                TreeMapWriter.persist(filePath, memstore.getTreeMap());
+            } catch (LimitExceeded e1) {
+                System.out.println("Error while merging files: " + e1.getMessage());
+            };
+        }
         clearMemstore();
+    }
+
+    public void compact() throws LimitExceeded {
+        FileMerger fileMerger = new FileMerger();
+        fileMerger.mergeFiles(FileManager.getSSTableFileList());
     }
 }
