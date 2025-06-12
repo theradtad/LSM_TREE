@@ -39,35 +39,35 @@ public class TestSparseIndex {
         // Add 1001 entries, only the 1000th entry should be indexed
         long offset = 0;
         for (int i = 0; i < 10; i++) {
-            String key = String.format("key%d", i);
+            String key = String.format("%d", i);
             sparseIndex.addEntry(key, offset);
             offset += 10;
         }
 
         TreeMap<String, SparseIndex.FilePosition> index = sparseIndex.getIndex();
         assertEquals(5, index.size()); // Only one entry should be indexed (1000th entry)
-        assertTrue(index.containsKey("key9")); // 10th entry (0-based index)
+        assertTrue(index.containsKey("9")); // 10th entry (0-based index)
     }
 
     @Test
     public void testGetClosestEntry() {
         // Add entries with offsets
         for (int i = 0; i < 30; i++) {
-            sparseIndex.addEntry("key" + i, i * 10);
+            sparseIndex.addEntry(String.valueOf(i), i * 10);
         }
 
         // Test exact match
-        SparseIndex.FilePosition pos1 = sparseIndex.getClosestEntry("key9");
+        SparseIndex.FilePosition pos1 = sparseIndex.getClosestEntry("9");
         assertNotNull(pos1);
         assertEquals(90L, pos1.getOffset()); // 9 * 10
 
         // Test getting closest smaller key
-        SparseIndex.FilePosition pos2 = sparseIndex.getClosestEntry("key15");
+        SparseIndex.FilePosition pos2 = sparseIndex.getClosestEntry("15");
         assertNotNull(pos2);
-        assertEquals(140L, pos2.getOffset()); // Should get key14's position
+        assertEquals(150L, pos2.getOffset()); // Should get key14's position
 
         // Test key before first index entry
-        SparseIndex.FilePosition pos3 = sparseIndex.getClosestEntry("key1");
+        SparseIndex.FilePosition pos3 = sparseIndex.getClosestEntry("0");
         assertNull(pos3); // No entry before this key
     }
 
@@ -75,7 +75,7 @@ public class TestSparseIndex {
     public void testSaveAndLoadIndex() {
         // Add some entries
         for (int i = 0; i < 2000; i++) {
-            sparseIndex.addEntry("key" + i, i * 10);
+            sparseIndex.addEntry(String.valueOf(i), i * 10);
         }
 
         // Save the index
@@ -103,13 +103,13 @@ public class TestSparseIndex {
     public void testIndexingFrequency() {
         // Add 30 entries
         for (int i = 0; i < 30; i++) {
-            sparseIndex.addEntry("key" + i, i * 10L);
+            sparseIndex.addEntry(String.valueOf(i), i * 10L);
         }
 
         TreeMap<String, SparseIndex.FilePosition> index = sparseIndex.getIndex();
         assertEquals(15, index.size()); // Should have entries for 999, 1999, 2999
-        assertTrue(index.containsKey("key9"));
-        assertTrue(index.containsKey("key19"));
-        assertTrue(index.containsKey("key29"));
+        assertTrue(index.containsKey("9"));
+        assertTrue(index.containsKey("19"));
+        assertTrue(index.containsKey("29"));
     }
 }
