@@ -15,9 +15,12 @@ public class TestLSMTree {
     }
 
     @AfterEach
-    public void tearDown() {
+    public void tearDown() throws Exception {
         FileManager.deleteSSTableFiles();
         FileManager.resetSSTableId();
+        if (lsmTree != null) {
+            lsmTree.close();
+        }
         lsmTree = null;
     }
 

@@ -47,6 +47,9 @@ public class TestBloomFilter {
 
     @Test
     public void testSaveAndLoad() throws IOException {
+        // Ensure data directory exists
+        new File("data").mkdirs();
+
         // Save the filter
         bloomFilter.saveToFile(TEST_FILTER_PATH);
 
